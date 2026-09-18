@@ -1,13 +1,20 @@
-class Category{
+enum CategoryType {
+  income,
+  expense,
+}
+
+class Category {
   final String id;
   final String name;
-  final bool isIncome;
-  final String? parentId;
+  final CategoryType type;
+  final bool isDefault;
+  final DateTime createdAt;
 
   const Category({
     required this.id,
     required this.name,
-    required this.isIncome,
-    this.parentId,
+    required this.type,
+    required this.isDefault,
+    required this.createdAt,
   });
 }
