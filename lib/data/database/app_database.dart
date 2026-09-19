@@ -74,11 +74,16 @@ class AppDatabase extends _$AppDatabase {
     executor ?? driftDatabase(name: 'moneylog'),
   );
 
-  // ==============================
-  // ACCOUNT OPERATIONS
-  // ==============================
+  // RESERVED CATEGORY IDs
 
-  // CREATE ACCOUNT
+  static const String deletedIncomeCategoryId =
+      'deleted-income';
+
+  static const String deletedExpenseCategoryId =
+      'deleted-expense';
+
+  // ACCOUNT OPERATIONS
+
   Future<void> createAccount({
     required String id,
     required String name,
@@ -93,19 +98,16 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  // READ ALL ACCOUNTS
   Future<List<Account>> getAllAccounts() {
     return select(accounts).get();
   }
 
-  // READ ONE ACCOUNT
   Future<Account?> getAccountById(String id) {
     return (select(accounts)
       ..where((account) => account.id.equals(id)))
         .getSingleOrNull();
   }
 
-  // UPDATE ACCOUNT
   Future<bool> updateAccount({
     required String id,
     required String name,
@@ -123,7 +125,6 @@ class AppDatabase extends _$AppDatabase {
     return updatedRows > 0;
   }
 
-  // DELETE ACCOUNT
   Future<bool> deleteAccount(String id) async {
     final deletedRows = await (delete(accounts)
       ..where((account) => account.id.equals(id)))
@@ -132,11 +133,8 @@ class AppDatabase extends _$AppDatabase {
     return deletedRows > 0;
   }
 
-  // ==============================
   // CATEGORY OPERATIONS
-  // ==============================
 
-  // CREATE CATEGORY
   Future<void> createCategory({
     required String id,
     required String name,
@@ -155,24 +153,34 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  // READ ALL CATEGORIES
   Future<List<Category>> getAllCategories() {
     return select(categories).get();
   }
 
-  // READ ONE CATEGORY
   Future<Category?> getCategoryById(String id) {
     return (select(categories)
       ..where((category) => category.id.equals(id)))
         .getSingleOrNull();
   }
 
-  // UPDATE CATEGORY
   Future<bool> updateCategory({
     required String id,
     required String name,
     required int type,
   }) async {
+    if (id == deletedIncomeCategoryId ||
+        id == deletedExpenseCategoryId) {
+      throw ArgumentError(
+        'The Deleted category cannot be renamed.',
+      );
+    }
+
+    if (name.trim().toLowerCase() == 'deleted') {
+      throw ArgumentError(
+        'The category name "Deleted" is reserved.',
+      );
+    }
+
     final updatedRows = await (update(categories)
       ..where((category) => category.id.equals(id)))
         .write(
@@ -185,18 +193,155 @@ class AppDatabase extends _$AppDatabase {
     return updatedRows > 0;
   }
 
-  // DELETE CATEGORY
   Future<bool> deleteCategory(String id) async {
-    final deletedRows = await (delete(categories)
-      ..where((category) => category.id.equals(id)))
+    if (id == deletedIncomeCategoryId ||
+        id == deletedExpenseCategoryId) {
+      throw ArgumentError(
+        'The Deleted category cannot be removed.',
+      );
+    }
+
+    final category = await getCategoryById(id);
+
+    if (category == null) {
+      return false;
+    }
+
+    final deletedCategoryId = category.type == 0
+        ? deletedIncomeCategoryId
+        : deletedExpenseCategoryId;
+
+    return transaction(() async {
+      final existingDeletedCategory =
+      await getCategoryById(deletedCategoryId);
+
+      if (existingDeletedCategory == null) {
+        await createCategory(
+          id: deletedCategoryId,
+          name: 'Deleted',
+          type: category.type,
+          isDefault: true,
+          createdAt: DateTime.now(),
+        );
+      }
+
+      await (update(transactions)
+        ..where((transaction) =>
+            transaction.categoryId.equals(id)))
+          .write(
+        TransactionsCompanion(
+          categoryId: Value(deletedCategoryId),
+        ),
+      );
+
+      final deletedRows = await (delete(categories)
+        ..where((category) => category.id.equals(id)))
+          .go();
+
+      return deletedRows > 0;
+    });
+  }
+
+  // TRANSACTION OPERATIONS
+
+  Future<void> createTransaction({
+    required String id,
+    required int type,
+    required double amount,
+    required String accountId,
+    String? destinationAccountId,
+    String? categoryId,
+    String? note,
+    required DateTime date,
+  }) async {
+    await into(transactions).insert(
+      TransactionsCompanion.insert(
+        id: id,
+        type: type,
+        amount: amount,
+        accountId: accountId,
+        destinationAccountId:
+        Value(destinationAccountId),
+        categoryId: Value(categoryId),
+        note: Value(note),
+        date: date,
+      ),
+    );
+  }
+
+  Future<List<Transaction>> getAllTransactions() {
+    return (select(transactions)
+      ..orderBy([
+            (transaction) => OrderingTerm(
+          expression: transaction.date,
+          mode: OrderingMode.desc,
+        ),
+      ]))
+        .get();
+  }
+
+  Future<Transaction?> getTransactionById(String id) {
+    return (select(transactions)
+      ..where((transaction) =>
+          transaction.id.equals(id)))
+        .getSingleOrNull();
+  }
+
+  Future<List<Transaction>> getTransactionsByAccountId(
+      String accountId,
+      ) {
+    return (select(transactions)
+      ..where((transaction) =>
+      transaction.accountId.equals(accountId) |
+      transaction.destinationAccountId.equals(accountId))
+      ..orderBy([
+            (transaction) => OrderingTerm(
+          expression: transaction.date,
+          mode: OrderingMode.desc,
+        ),
+      ]))
+        .get();
+  }
+
+  Future<bool> updateTransaction({
+    required String id,
+    required int type,
+    required double amount,
+    required String accountId,
+    String? destinationAccountId,
+    String? categoryId,
+    String? note,
+    required DateTime date,
+  }) async {
+    final updatedRows = await (update(transactions)
+      ..where((transaction) =>
+          transaction.id.equals(id)))
+        .write(
+      TransactionsCompanion(
+        type: Value(type),
+        amount: Value(amount),
+        accountId: Value(accountId),
+        destinationAccountId:
+        Value(destinationAccountId),
+        categoryId: Value(categoryId),
+        note: Value(note),
+        date: Value(date),
+      ),
+    );
+
+    return updatedRows > 0;
+  }
+
+  Future<bool> deleteTransaction(String id) async {
+    final deletedRows = await (delete(transactions)
+      ..where((transaction) =>
+          transaction.id.equals(id)))
         .go();
 
     return deletedRows > 0;
   }
 
-  // ==============================
   // DATABASE VERSION
-  // ==============================
 
   @override
   int get schemaVersion => 1;
