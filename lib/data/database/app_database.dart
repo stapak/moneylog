@@ -12,6 +12,9 @@ class Accounts extends Table {
 
   RealColumn get openingBalance => real()();
 
+  TextColumn get iconName =>
+      text().withDefault(const Constant('account_balance'))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -88,12 +91,14 @@ class AppDatabase extends _$AppDatabase {
     required String id,
     required String name,
     required double openingBalance,
+    String iconName = 'account_balance',
   }) async {
     await into(accounts).insert(
       AccountsCompanion.insert(
         id: id,
         name: name,
         openingBalance: openingBalance,
+        iconName: Value(iconName),
       ),
     );
   }
@@ -112,6 +117,7 @@ class AppDatabase extends _$AppDatabase {
     required String id,
     required String name,
     required double openingBalance,
+    String iconName = 'account_balance',
   }) async {
     final updatedRows = await (update(accounts)
       ..where((account) => account.id.equals(id)))
@@ -119,6 +125,7 @@ class AppDatabase extends _$AppDatabase {
       AccountsCompanion(
         name: Value(name),
         openingBalance: Value(openingBalance),
+        iconName: Value(iconName),
       ),
     );
 
@@ -260,8 +267,7 @@ class AppDatabase extends _$AppDatabase {
         type: type,
         amount: amount,
         accountId: accountId,
-        destinationAccountId:
-        Value(destinationAccountId),
+        destinationAccountId: Value(destinationAccountId),
         categoryId: Value(categoryId),
         note: Value(note),
         date: date,
@@ -321,8 +327,7 @@ class AppDatabase extends _$AppDatabase {
         type: Value(type),
         amount: Value(amount),
         accountId: Value(accountId),
-        destinationAccountId:
-        Value(destinationAccountId),
+        destinationAccountId: Value(destinationAccountId),
         categoryId: Value(categoryId),
         note: Value(note),
         date: Value(date),
@@ -341,8 +346,20 @@ class AppDatabase extends _$AppDatabase {
     return deletedRows > 0;
   }
 
-  // DATABASE VERSION
+  // DATABASE VERSION AND MIGRATION
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (Migrator m) async {
+      await m.createAll();
+    },
+    onUpgrade: (Migrator m, int from, int to) async {
+      if (from < 2) {
+        await m.addColumn(accounts, accounts.iconName);
+      }
+    },
+  );
 }

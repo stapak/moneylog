@@ -37,8 +37,20 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _iconNameMeta = const VerificationMeta(
+    'iconName',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, name, openingBalance];
+  late final GeneratedColumn<String> iconName = GeneratedColumn<String>(
+    'icon_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('account_balance'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, openingBalance, iconName];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -75,6 +87,12 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
     } else if (isInserting) {
       context.missing(_openingBalanceMeta);
     }
+    if (data.containsKey('icon_name')) {
+      context.handle(
+        _iconNameMeta,
+        iconName.isAcceptableOrUnknown(data['icon_name']!, _iconNameMeta),
+      );
+    }
     return context;
   }
 
@@ -96,6 +114,10 @@ class $AccountsTable extends Accounts with TableInfo<$AccountsTable, Account> {
         DriftSqlType.double,
         data['${effectivePrefix}opening_balance'],
       )!,
+      iconName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon_name'],
+      )!,
     );
   }
 
@@ -109,10 +131,12 @@ class Account extends DataClass implements Insertable<Account> {
   final String id;
   final String name;
   final double openingBalance;
+  final String iconName;
   const Account({
     required this.id,
     required this.name,
     required this.openingBalance,
+    required this.iconName,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -120,6 +144,7 @@ class Account extends DataClass implements Insertable<Account> {
     map['id'] = Variable<String>(id);
     map['name'] = Variable<String>(name);
     map['opening_balance'] = Variable<double>(openingBalance);
+    map['icon_name'] = Variable<String>(iconName);
     return map;
   }
 
@@ -128,6 +153,7 @@ class Account extends DataClass implements Insertable<Account> {
       id: Value(id),
       name: Value(name),
       openingBalance: Value(openingBalance),
+      iconName: Value(iconName),
     );
   }
 
@@ -140,6 +166,7 @@ class Account extends DataClass implements Insertable<Account> {
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       openingBalance: serializer.fromJson<double>(json['openingBalance']),
+      iconName: serializer.fromJson<String>(json['iconName']),
     );
   }
   @override
@@ -149,15 +176,21 @@ class Account extends DataClass implements Insertable<Account> {
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
       'openingBalance': serializer.toJson<double>(openingBalance),
+      'iconName': serializer.toJson<String>(iconName),
     };
   }
 
-  Account copyWith({String? id, String? name, double? openingBalance}) =>
-      Account(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        openingBalance: openingBalance ?? this.openingBalance,
-      );
+  Account copyWith({
+    String? id,
+    String? name,
+    double? openingBalance,
+    String? iconName,
+  }) => Account(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    openingBalance: openingBalance ?? this.openingBalance,
+    iconName: iconName ?? this.iconName,
+  );
   Account copyWithCompanion(AccountsCompanion data) {
     return Account(
       id: data.id.present ? data.id.value : this.id,
@@ -165,6 +198,7 @@ class Account extends DataClass implements Insertable<Account> {
       openingBalance: data.openingBalance.present
           ? data.openingBalance.value
           : this.openingBalance,
+      iconName: data.iconName.present ? data.iconName.value : this.iconName,
     );
   }
 
@@ -173,37 +207,42 @@ class Account extends DataClass implements Insertable<Account> {
     return (StringBuffer('Account(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('openingBalance: $openingBalance')
+          ..write('openingBalance: $openingBalance, ')
+          ..write('iconName: $iconName')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, openingBalance);
+  int get hashCode => Object.hash(id, name, openingBalance, iconName);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Account &&
           other.id == this.id &&
           other.name == this.name &&
-          other.openingBalance == this.openingBalance);
+          other.openingBalance == this.openingBalance &&
+          other.iconName == this.iconName);
 }
 
 class AccountsCompanion extends UpdateCompanion<Account> {
   final Value<String> id;
   final Value<String> name;
   final Value<double> openingBalance;
+  final Value<String> iconName;
   final Value<int> rowid;
   const AccountsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.openingBalance = const Value.absent(),
+    this.iconName = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   AccountsCompanion.insert({
     required String id,
     required String name,
     required double openingBalance,
+    this.iconName = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -212,12 +251,14 @@ class AccountsCompanion extends UpdateCompanion<Account> {
     Expression<String>? id,
     Expression<String>? name,
     Expression<double>? openingBalance,
+    Expression<String>? iconName,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (openingBalance != null) 'opening_balance': openingBalance,
+      if (iconName != null) 'icon_name': iconName,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -226,12 +267,14 @@ class AccountsCompanion extends UpdateCompanion<Account> {
     Value<String>? id,
     Value<String>? name,
     Value<double>? openingBalance,
+    Value<String>? iconName,
     Value<int>? rowid,
   }) {
     return AccountsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       openingBalance: openingBalance ?? this.openingBalance,
+      iconName: iconName ?? this.iconName,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -248,6 +291,9 @@ class AccountsCompanion extends UpdateCompanion<Account> {
     if (openingBalance.present) {
       map['opening_balance'] = Variable<double>(openingBalance.value);
     }
+    if (iconName.present) {
+      map['icon_name'] = Variable<String>(iconName.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -260,6 +306,7 @@ class AccountsCompanion extends UpdateCompanion<Account> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('openingBalance: $openingBalance, ')
+          ..write('iconName: $iconName, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1159,12 +1206,14 @@ typedef $$AccountsTableCreateCompanionBuilder = AccountsCompanion Function({
   required String id,
   required String name,
   required double openingBalance,
+  Value<String> iconName,
   Value<int> rowid,
 });
 typedef $$AccountsTableUpdateCompanionBuilder = AccountsCompanion Function({
   Value<String> id,
   Value<String> name,
   Value<double> openingBalance,
+  Value<String> iconName,
   Value<int> rowid,
 });
 
@@ -1189,6 +1238,11 @@ class $$AccountsTableFilterComposer
 
   ColumnFilters<double> get openingBalance => $composableBuilder(
     column: $table.openingBalance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get iconName => $composableBuilder(
+    column: $table.iconName,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1216,6 +1270,11 @@ class $$AccountsTableOrderingComposer
     column: $table.openingBalance,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get iconName => $composableBuilder(
+    column: $table.iconName,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$AccountsTableAnnotationComposer
@@ -1237,6 +1296,9 @@ class $$AccountsTableAnnotationComposer
     column: $table.openingBalance,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get iconName =>
+      $composableBuilder(column: $table.iconName, builder: (column) => column);
 }
 
 class $$AccountsTableTableManager
@@ -1270,11 +1332,13 @@ class $$AccountsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<double> openingBalance = const Value.absent(),
+                Value<String> iconName = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AccountsCompanion(
                 id: id,
                 name: name,
                 openingBalance: openingBalance,
+                iconName: iconName,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1282,11 +1346,13 @@ class $$AccountsTableTableManager
                 required String id,
                 required String name,
                 required double openingBalance,
+                Value<String> iconName = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AccountsCompanion.insert(
                 id: id,
                 name: name,
                 openingBalance: openingBalance,
+                iconName: iconName,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
