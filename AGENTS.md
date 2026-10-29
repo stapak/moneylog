@@ -102,6 +102,8 @@ Do not silently change confirmed requirements. Record conflicts and seek approva
 
 ## 7. UI/UX Reference Images
 
+Before implementing or modifying any UI feature, read `docs/UI_UX_SPEC.md` and `docs/UI_REFERENCE_CATALOG.md`. The UI/UX specification records approved MoneyLog UI requirements; the reference catalogue records observations made from the original screenshots. Features visible in a reference app are not automatically approved MoneyLog requirements.
+
 Before implementing or modifying a screen:
 
 1. Read `docs/UI_UX_SPEC.md`.
@@ -126,7 +128,7 @@ Distinguish between:
 
 Screenshots are visual references, not automatic authorization to copy every visible feature.
 
-Confirmed MoneyLog requirements take precedence over conflicting older screenshots. Do not generate replacement images or rename original reference images without approval.
+Confirmed MoneyLog requirements take precedence over conflicting older screenshots. Do not generate replacement images or rename original reference images without approval. Preserve the original screenshots, and update the catalogue whenever reference images are added, removed, or reinterpreted.
 
 If an image cannot be accessed or interpreted, mark it unverified.
 
