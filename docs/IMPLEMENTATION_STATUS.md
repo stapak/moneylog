@@ -1,6 +1,22 @@
 ﻿# MoneyLog Implementation Status
 
-**Audit date:** 2026-10-27. Statuses reflect direct inspection of the local source and test files. A visible screen is not treated as proof that a workflow works.
+**Audit date:** 2026-10-29. Statuses reflect direct source inspection and the command results recorded below. A visible screen is not treated as proof that a workflow works.
+
+## Baseline audit verification (2026-10-29)
+
+Initial repository state: branch `master`, HEAD `0fd6b3d61a9d075822b4ddcf5e215cc55fbbacb1`, clean working tree. The repository contains one Flutter app under `lib/`, Drift persistence, Android/iOS/desktop/web scaffolding, and six Dart test files. No source, dependency, schema, or test files were changed during this audit.
+
+| Check | Command / evidence | Actual result |
+|---|---|---|
+| Flutter and Dart launcher discovery | PowerShell `Get-Command flutter`, `Get-Command dart` | Found `F:\flutter\bin\flutter.bat` and `F:\flutter\bin\dart.bat`. |
+| Flutter version | `F:\flutter\bin\cache\flutter.version.json`; `git -C F:\flutter describe --tags --exact-match HEAD` | SDK metadata and exact Git tag report Flutter **3.47.3 stable** (revision `e8113bf45620cbeb8aff64947ee4c93e16adb4cf`). `flutter --version` itself produced no output and was interrupted after 60 seconds. |
+| Dart version | `F:\flutter\bin\cache\dart-sdk\version`; `dart --version` | Bundled SDK version file reports Dart **3.13.3**. `dart --version` produced no output and was interrupted after 30 seconds. |
+| Dependency resolution | `flutter pub get` | Produced no output and was interrupted after 30 seconds. Dependency resolution did not complete; no success is claimed. |
+| Static analysis | `flutter analyze` | Produced no output and was interrupted after 30 seconds. Analysis did not complete. |
+| Automated tests | `flutter test` | Produced no output and was interrupted after 30 seconds. Tests did not complete; there is no pass/fail result. |
+| Android debug build | `flutter build apk --debug` | Produced no output and was interrupted after 30 seconds. Build did not complete; readiness remains unverified. |
+
+The SDK versions above come from local SDK metadata, not successful version CLI commands. Each stalled command was stopped with Ctrl+C (shell exit code 1); this is an environment/tool invocation timeout, not a reported Flutter diagnostic.
 
 | Requirement | Status | Evidence and what works | Remaining work / test evidence |
 |---|---|---|---|
@@ -8,8 +24,8 @@
 | Income and expense transaction recording | PARTIAL | `lib/data/database/app_database.dart` CRUD; `lib/data/repositories/transaction_repository.dart` maps income/expense and `test/transaction_repository_test.dart` covers persistence using in-memory DB. | No transaction-entry UI and validation is not enforced in repository/database. Amounts use `double`/`REAL`. No test command completed. |
 | Transaction editing and deletion | PARTIAL | Repository/database update and delete methods; corresponding cases in `test/transaction_repository_test.dart`. | No UI or delete safeguards for transactions; test execution unavailable. |
 | Descriptions and transaction history | PARTIAL | `note` field is persisted; global list sorts descending by date in `AppDatabase.getAllTransactions`; repository test checks note and retrieval. | No description/history UI, filters or grouping; no dedicated sort assertion. |
-| Accounts and opening balances | PARTIAL | `lib/main.dart` account add/edit/delete dialogs; `Account` model, `Accounts` table and repository CRUD; `test/account_repository_test.dart`. | UI validates non-empty name and non-negative parseable balance, but account deletion leaves associated transaction rows because there are no foreign keys/cascade or safeguard. Icon mapping defect in `lib/data/repositories/account_repository.dart` drops `iconName`. Tests not run. |
-| Transfers | PARTIAL | Transfer type and destination field in models/table; account query includes source or destination; `BalanceRepository` adjusts source/destination. Repository tests cover transfer storage/query and `test/transaction_service_test.dart` checks destination presence. | No transfer UI; service validation is not wired into writes. No same-account/amount failure tests or end-to-end balance tests. |
+| Accounts and opening balances | PARTIAL | `lib/main.dart` account add/edit/delete dialogs; `Account` model, `Accounts` table and repository CRUD; `test/account_repository_test.dart`. | **Confirmed:** repository create/read/update omit `iconName`; DB defaults or model defaults replace the selected icon. Account deletion only deletes the account row; transaction references remain possible because no foreign-key constraints are declared. UI checks non-empty names and parseable, non-negative opening balances. Tests did not complete. |
+| Transfers | PARTIAL | Transfer type and destination field in models/table; account query includes source or destination; `BalanceRepository` adjusts source/destination. Repository tests cover transfer storage/query and `test/transaction_service_test.dart` checks destination presence. | No transfer UI; `TransactionService.validateTrasaction` is not invoked by repository/database writes. The service checks positive amounts, destination presence, and different source/destination, but the tests cover only a valid transfer and missing destination. Tests did not complete. |
 | Built-in/custom categories | PARTIAL | Category records have `isDefault`; repository supports CRUD and category type; `test/category_repository_test.dart`. | No seed/default category initialization or category UI. Thus built-in category availability is not established. Tests not run. |
 | Category colors and separate income/expense lists | PARTIAL | `CategoryType` and DB integer type separate income and expense. | No color property/column and no UI list. Tests check category type only. |
 | Category selection/filtering and history safety | PARTIAL | Transactions store optional `categoryId`; category deletion transactionally reassigns references to a reserved type-specific `Deleted` category in `AppDatabase.deleteCategory`. | No transaction category selector or filter UI. No test verifies reassignment, rollback, or preservation. |
@@ -17,22 +33,35 @@
 | Confirmed navigation decisions: no Balance in summary; Categories in hamburger; Target bottom nav; global transaction `+` | VERIFIED MISSING | Inspected `lib/main.dart`: no Home/Records summary, hamburger/drawer, bottom nav, Target, or transaction button. Current FAB adds accounts. | Implement navigation and summary only after core transaction workflow. No relevant tests. Confirmed decisions in `AGENTS.md` and `docs/DECISIONS.md` remain intact. |
 | Target and budget calculations | VERIFIED MISSING | No target/budget model, table, repository, service, or screen under `lib/`; `pubspec.yaml` declares no target-specific support. | Goal CRUD, periods, progress/spending calculations and tests absent. |
 | Bill attachments and storage | VERIFIED MISSING | Transaction schema has no attachment/path field or relation; no attachment service/files found under `lib/`; no relevant dependency declared. | Local attachment association, lifecycle, backup inclusion, and export handling absent. |
-| Local persistence | PARTIAL | `AppDatabase` uses `driftDatabase(name: 'moneylog')`; all repository tests construct a Drift in-memory DB. | No restart/persistent-storage test, error handling evidence, relationships/foreign keys, or completed runtime verification. Tests did not complete. |
+| Local persistence | PARTIAL | `AppDatabase` uses `driftDatabase(name: 'moneylog')`; repository tests construct a Drift in-memory DB. | No restart/persistent-storage test or completed runtime verification. `Transactions.accountId`, `destinationAccountId`, and `categoryId` have no declared references/foreign keys or database validation; code permits dangling references. Tests did not complete. |
 | Database migrations | PARTIAL | `lib/data/database/app_database.dart`: schema version 2; create-all and upgrade adds `accounts.iconName` below v2. | No migration test or evidence for upgrade from an existing on-device DB. |
 | Password-protected `.mbak`, package validation, attachments and failure handling | VERIFIED MISSING | No backup/restore code or crypto/archive/file selection dependencies in `pubspec.yaml`; no package code found in `lib/`. | Package format, KDF, authenticated encryption, validation, restore strategy/rollback, attachment packaging, and failure-case tests absent. |
 | PDF options: Basic; Expenses + descriptions; Expenses + descriptions + bills | VERIFIED MISSING | No PDF/export code in `lib/`; no PDF dependency in `pubspec.yaml`. | All three options and tests absent; Basic contents remain an open decision in `docs/DECISIONS.md`. |
 | Pie/bar charts, category selection and CSV export | VERIFIED MISSING | No chart, report, category-export-selection, or CSV implementation/dependency found in `lib/` and `pubspec.yaml`. | Charts, checkbox selection, CSV fields/filtering and tests absent. |
 | Dark theme | VERIFIED MISSING | `BudgetApp` in `lib/main.dart` defines only one green-seeded theme and no `darkTheme`, theme mode, or preference. | Dark theme and theme behavior tests absent. |
 | Responsive UI | UNVERIFIED | Only account screen is present; it uses `SingleChildScrollView` in dialogs and a list screen, but no responsive breakpoints/layout variants. | No device-size/UI verification was run. Treat responsive behavior as unverified rather than wholly missing. |
-| Tests, static analysis, Android build readiness | BROKEN | Source review found `test/widget_test.dart` expects `Budget` and `Budget App`, while current app displays `MoneyLog Accounts`. | `flutter test` and `flutter --version` each hung without output and were interrupted. Analyzer and Android build were not run; overall test/build readiness cannot pass verification. Fix/replace stale widget expectation and obtain a functioning Flutter toolchain before readiness can be established. |
+| Tests, static analysis, Android build readiness | BROKEN | `test/widget_test.dart` expects visible text `Budget` and `Budget App`; `lib/main.dart` builds an `AccountsScreen` titled `MoneyLog Accounts`. This is a confirmed stale expectation from source comparison, not a test-run failure. | `flutter pub get`, `flutter analyze`, `flutter test`, and `flutter build apk --debug` each stalled without output and were interrupted after 30 seconds. `flutter --version` stalled for 60 seconds; `dart --version` stalled for 30 seconds. No analyzer, test, or build result was obtained. |
 | Website implementation and capabilities | VERIFIED MISSING | `web/index.html`, `web/manifest.json`, and `web/icons/` are Flutter web scaffolding; HTML says -A new Flutter project.- No website feature code exists in `lib/`. | No laptop-hosted workspace, data import/export, validation, editing, conflict handling, or website tests. This remains later-phase scope. |
 
-## Defects observed directly
+## Confirmed defects and data-integrity gaps observed in source
 
-- Account icon selection is not persisted through `AccountRepository`: create/read/update omit `iconName`, although `AccountsScreen` presents the control and the Drift table supports the value.
-- Account deletion removes only an account row; the schema declares no foreign keys and deletion does not protect or reassign transactions.
-- The widget test's expected visible strings contradict the current UI.
-- Financial amounts use floating point (`double` and Drift `REAL`), without a decimal/currency precision policy documented in code.
+- Account icon selection is not preserved through `AccountRepository`: create/read/update omit `iconName`, although `AccountsScreen` presents the selector and the Drift table has the column.
+- Account deletion removes only the account row; the schema declares no foreign keys and deletion does not protect or reassign transaction rows that refer to that account.
+- Transaction write paths do not call `TransactionService`. The service is not a database constraint and currently only checks `amount <= 0` plus transfer destination rules; non-finite values are not explicitly rejected there.
+- Transaction amounts and account opening balances use Dart `double` and Drift `REAL`. This is a confirmed representation choice with financial precision risk; no rounding failure was measured in this audit.
+- `test/widget_test.dart` asserts `Budget` and `Budget App`, while the root screen is titled `MoneyLog Accounts`; it is stale based on source inspection. Since `flutter test` did not run, no runtime test failure is claimed.
 
-These findings do not mean the audit changed application code. The only intended edits are this file, `docs/ARCHITECTURE.md`, and `docs/ROADMAP.md`.
+## Risks or behavior requiring further investigation
+
+- Account deletion policy remains unresolved in `DECISIONS.md` (OPEN-001). Confirm whether deletion should be blocked, preserve historical transactions through an explicit inactive/deleted account model, or use another approved policy before changing storage behavior. Current code definitely permits dangling references; the user's intended deletion semantics are not established.
+- No migration test verifies the v1-to-v2 addition of `accounts.iconName`, and no durable close/reopen test verifies persistence across app restarts.
+- Transaction tests use integer-valued amounts and create rows with account/category IDs that are not first inserted. They do not verify decimal rounding, invalid amounts, referential integrity, or safe account deletion. These test cases are source evidence only because the suite did not execute.
+- The account form checks for null or negative opening balances but does not explicitly require finite values. Runtime acceptance of `NaN`/infinity was not exercised in this audit.
+- Existing automated tests may contain further failures; none could be established without a completed test run.
+
+## Recommended next task
+
+After restoring command execution, fix account icon persistence as the smallest unambiguous data-integrity change: pass `iconName` through account create/update and both read mappings, then add regression coverage proving a non-default icon survives create/read, list/read, and update. Acceptance: these repository cases pass against the existing schema without a migration, and the full suite, analyzer, and Android debug build complete successfully. Treat account deletion as a separate task after OPEN-001 is resolved, with tests that establish the approved behavior for source and destination transfer references.
+
+This audit changed only this status document; application source, dependencies, database schema, tests, and project decisions were not modified. The roadmap already places baseline restoration first and account integrity second, so its priorities did not need to change.
 
