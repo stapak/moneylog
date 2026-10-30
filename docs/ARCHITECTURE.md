@@ -1,6 +1,6 @@
 ﻿# MoneyLog Architecture
 
-**Audit basis:** local source tree rechecked on 2026-10-30. This document describes code that exists; it is not a target design. Requirement-level evidence is indexed in [REQUIREMENTS_TRACEABILITY.md](REQUIREMENTS_TRACEABILITY.md).
+**Audit basis:** source/implementation findings were established on 2026-10-30 at `eba16e7` and rechecked for the knowledge-transfer update at `ff6784d`. The latter changed documentation only. This document describes code that exists; it is not a target design. Requirement-level evidence is indexed in [REQUIREMENTS_TRACEABILITY.md](REQUIREMENTS_TRACEABILITY.md).
 
 ## Project structure
 
@@ -28,11 +28,11 @@ Drift defines three tables:
 - `Categories`: text primary key, name, integer type (`0` income, `1` expense), default flag, creation date. There is no color column.
 - `Transactions`: text primary key, integer type (`0` income, `1` expense, `2` transfer), `REAL` amount, source account ID, nullable destination account/category/note, and date.
 
-There are no declared foreign keys or database constraints relating transactions to accounts/categories. Account deletion deletes only the account row. Category deletion is transactional: it creates/reuses a type-specific reserved `Deleted` category, moves matching transaction category IDs, then deletes the category. Transactions can be queried globally (descending by date), by ID, or by account (including transfer destination); CRUD is available. No transaction UI, summary aggregation, date-period query, filtering UI, or history screen exists.
+There are no declared foreign keys or database constraints relating transactions to accounts/categories. Account deletion deletes only the account row. Category deletion is transactional: it creates/reuses a type-specific reserved `Deleted` category, moves matching transaction category IDs, then deletes the category. However, `updateCategory` can change a category's type without checking the types of linked transactions, so those existing references may become semantically inconsistent. Transactions can be queried globally (descending by date), by ID, or by account (including transfer destination); CRUD is available. No transaction UI, summary aggregation, date-period query, filtering UI, or history screen exists.
 
 A mapping defect is visible in `AccountRepository`: the UI creates/edits an `Account` with an `iconName`, but repository create/read/update mappings omit it, so persisted records use the DB default and the UI read mapping also returns the model default. `AppDatabase` supports icon persistence, but the repository does not pass the value.
 
-`BalanceRepository.calculateBalance` starts with opening balance and adds income, subtracts expenses, and applies transfers to source/destination. It uses `double`; only one calculation test covers a normal example. It is not shown in the current UI.
+`TransactionService.validateTrasaction` rejects amounts `<= 0`, a missing/empty transfer destination ID, and a destination equal to the source. It does not verify that the source or destination IDs identify existing accounts, and repository/database transaction writes do not invoke it. The comparison also does not explicitly reject non-finite values. `BalanceRepository.calculateBalance` starts with opening balance and adds income, subtracts expenses, and applies transfers to source/destination. It uses `double`; only one calculation test covers a normal example. It is not shown in the current UI.
 
 ## Persistence and migrations
 
@@ -48,7 +48,7 @@ Runtime dependencies in `pubspec.yaml`: Flutter SDK, `cupertino_icons`, `drift`,
 - `test/category_repository_test.dart`: in-memory category create/read/list/update/delete.
 - `test/transaction_repository_test.dart`: in-memory income/expense/transfer writes, reads, update/delete, account query.
 - `test/balance_repository_test.dart`: a single balance arithmetic example.
-- `test/transaction_service_test.dart`: valid transfer and missing-destination validation; no test for same source/destination or non-positive amount.
+- `test/transaction_service_test.dart`: valid transfer and missing-destination validation; no test for same source/destination, non-positive/non-finite amounts, or whether referenced accounts exist.
 - `test/widget_test.dart`: expects text `Budget` and `Budget App`, while the current app title/screen display MoneyLog Accounts. This expectation conflicts with directly inspected UI and is likely stale; it was not executed successfully in this audit.
 
 Commands attempted on 2026-10-27: `flutter test` and `flutter --version` produced no output and did not complete during the available wait; both processes were interrupted. Therefore tests, static analysis, and Android build are **not verified**. No command result is represented as a pass.

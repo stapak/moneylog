@@ -36,26 +36,18 @@ The application should support:
 - Deleting transactions with appropriate safeguards.
 - Transaction dates, amounts, categories, and descriptions.
 - Transaction history and relevant filters.
-- Transfers between accounts, where supported by the confirmed account model.
+- Distinct Expense, Income, and Transfer transactions. Transfers move value between distinct accounts and are not counted as income or expenses in summaries.
 - A global floating '+' button for opening the Add New Transaction screen.
 
 Financial calculations must handle decimal precision and currency formatting appropriately.
 
-The exact transaction schema and transfer rules must be documented after inspecting the implementation.
+Transfer-specific fields and validation details remain open and must be confirmed before they are treated as product rules; see `DECISIONS.md` (OPEN-002). Existing implementation behavior is evidence about current code, not approval of a transfer policy.
 
 ### 3.2 Accounts
 
-The application should support separate financial accounts where included in the established implementation and confirmed requirements.
+The application must support multiple named accounts and opening balances. Users must be able to view transactions associated with an account, including transfers into and out of it. Account changes must preserve transaction history and relationships.
 
-Account functionality may include:
-
-- Creating and viewing accounts.
-- Recording opening balances.
-- Viewing account-specific transactions.
-- Editing and deleting accounts with appropriate safeguards.
-- Transferring funds between accounts.
-
-The precise account types, deletion rules, opening-balance treatment, and transfer behavior must be verified against the existing project. Do not invent these rules.
+The supported account types, treatment of opening balances in reports, negative-balance rules, and account-deletion policy remain unresolved. Until the deletion policy is confirmed, do not implement behavior that leaves dangling transaction references or silently discards history. Transfer representation and validation details remain open in `DECISIONS.md` (OPEN-001/002).
 
 ### 3.3 Categories
 
@@ -119,7 +111,7 @@ Do not assume that all of these capabilities are already implemented.
 
 Transactions should support descriptions.
 
-Where implemented or required, transactions should also support bill images or attachments.
+Transactions must support attaching bill files, with those attachments kept under the user's control.
 
 The specification and architecture must document:
 
@@ -223,11 +215,11 @@ The precise fields included in Basic must be confirmed from the existing design 
 
 ### 6.3 Category selection
 
-Users should be able to select which categories to include in an export through checkboxes, where supported by the export workflow.
+Users must be able to select categories to include in supported export workflows through checkboxes. The exact fields, filtering behavior, and handling of transfer rows remain open for CSV and PDF as recorded in `DECISIONS.md` (OPEN-016).
 
 ### 6.4 CSV export
 
-CSV export has been discussed separately from PDF export and `.mbak` backups.
+Provide CSV export separately from PDF reports and `.mbak` backups; CSV files are not restorable backup packages.
 
 Its exact fields, filters, and behavior must be verified before implementation.
 

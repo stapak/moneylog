@@ -2,7 +2,7 @@
 
 **Audit basis:** source/priority audit 2026-10-27; repository handover rechecked 2026-10-30. Priorities below reflect the local source audit. `[x]` means directly verified complete, `[!]` marks a directly verified defect or missing requirement, and `[ ]` means pending or unverified.
 
-Requirement IDs and acceptance criteria are maintained in [REQUIREMENTS_TRACEABILITY.md](REQUIREMENTS_TRACEABILITY.md). The 2026-10-30 review found no newer source changes or verification results; Git HEAD `eba16e7` changes only the implementation-status document. No checks were run during the documentation audit.
+Requirement IDs and acceptance criteria are maintained in [REQUIREMENTS_TRACEABILITY.md](REQUIREMENTS_TRACEABILITY.md). The source/implementation audit baseline was `eba16e7`; that commit changed only `IMPLEMENTATION_STATUS.md`. Reference commit `ff6784d` followed as a documentation-only knowledge-transfer update, adding the traceability matrix and updating project documentation without changing application source, tests, dependencies, schemas, or migrations. No Flutter checks were run for that documentation update.
 
 ## Phase 0 - Source audit
 
@@ -16,23 +16,26 @@ Requirement IDs and acceptance criteria are maintained in [REQUIREMENTS_TRACEABI
 **Requirements:** QA-001, QA-002, HAND-001.
 
 - [!] The existing `test/widget_test.dart` expects `Budget` and `Budget App`, but inspected `lib/main.dart` renders MoneyLog Accounts; Flutter commands produced no output and hung during this audit.
-- [ ] Establish a working Flutter/Dart toolchain in this environment and run `flutter --version`, `flutter test`, and `flutter analyze`.
-- [ ] Align the widget test with the intended current app entry screen and ensure the full suite passes.
+- [ ] Establish a working Flutter/Dart toolchain in this environment and run `flutter --version`, `flutter test`, and `flutter analyze`. Record coverage gaps separately from command execution outcomes.
+- [ ] Confirm the intended startup route, then replace the stale widget expectation with coverage for an approved implemented UI and ensure the full suite passes.
 - [ ] Run an Android debug build and record actual result.
 - [ ] Address analyzer/build defects found by those commands.
 
-**Exit criterion:** Flutter tests and static analysis complete successfully, and the Android app builds. Until then, build readiness is unverified.
+**Exit criterion:** Required coverage exists for the implemented scope; Flutter tests and static analysis complete successfully, and the Android app builds. Until those commands complete, execution and build readiness remain unverified.
 
 ## Phase 2 - Protect and verify local financial data
 
 **Requirements:** ACC-002, ACC-004, DAT-001–DAT-004, TXN-001, TXN-003.
 
-- [!] The `AccountRepository` drops `iconName` on create/read/update although the UI edits it and `Accounts` has a DB column.
+- [!] Existing implementation defect ACC-002: `AccountRepository` drops `iconName` on create/read/update although the current UI edits it and `Accounts` has a DB column. Fixing this preserves existing UI behavior and does not create a new product requirement.
 - [!] Account deletion removes an account without handling transaction rows that reference it; schema has no FK constraints.
+- [!] `AppDatabase.updateCategory` can change income/expense type without checking linked transactions.
+- [!] Transfer validation checks that the destination ID is nonempty and differs from the source, but does not verify that either account exists; repository writes bypass the validation service.
 - [ ] Decide and document safe account deletion behavior, then preserve transaction/account integrity.
 - [ ] Replace or formally constrain floating-point amount storage and define currency precision before expanding calculation/reporting paths.
 - [ ] Add tests for migration from v1 to v2, durable reopen/restart behavior, invalid references, and data-preserving category reassignment.
-- [ ] Ensure service validations are invoked by write paths, including transfer source/destination and positive amount checks.
+- [ ] Ensure service validations are invoked by write paths, including transfer source/destination existence and positive finite amount checks.
+- [ ] Prevent category type changes from leaving linked transactions inconsistent; add regression coverage for type changes and deletion reassignment.
 
 **Exit criterion:** Existing records survive upgrades/restarts and CRUD operations cannot leave inconsistent or silently invalid records.
 
@@ -110,5 +113,5 @@ Start only after mobile persistence and backup/restore are reliable.
 
 ## Immediate next task
 
-First restore a verifiable Flutter baseline (QA-001/QA-002): resolve the stale widget-test expectation against the approved current startup behavior, establish why Flutter commands stall, then run the suite, analyzer, and Android debug build. Acceptance is successful completion of each check with outcomes recorded; a stall is inconclusive, not a test failure. Next fix account icon persistence (ACC-002): pass `iconName` through repository create/update and both read mappings, with regression cases for create/read, list/read, and update; verify against the current schema without a migration. Keep account deletion (ACC-004) separate until OPEN-013 is resolved.
+First restore a verifiable Flutter baseline (QA-001/QA-002): confirm the intended startup route, establish why Flutter commands stall, then replace the stale widget expectation with coverage for an approved implemented UI and run the suite, analyzer, and Android debug build. Acceptance is successful completion of each check with outcomes recorded; a stall is inconclusive, not a test failure. Next fix the existing account icon mapping defect (ACC-002): pass `iconName` through repository create/update and both read mappings, with regression cases for create/read, list/read, and update; verify against the current schema without a migration. Keep account deletion behavior separate until OPEN-013 is resolved.
 
