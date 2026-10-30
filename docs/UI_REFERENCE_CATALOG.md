@@ -3,11 +3,13 @@
 **Document type:** Original visual reference inventory
 **Status:** All files in the current reference directory opened and catalogued
 **Image directory:** `docs/reference-images/`
-**Last reviewed:** 2026-10-29
+**Last reviewed:** 2026-10-30
 
 ## 1. Purpose and authority
 
 This catalogue records what is visibly present in the original screenshot files. It is evidence about the referenced app's screens and states; it does not approve those features for MoneyLog. Approved MoneyLog UI requirements are recorded in [UI_UX_SPEC.md](UI_UX_SPEC.md), with product requirements and decisions in [PROJECT_SPEC.md](PROJECT_SPEC.md) and [DECISIONS.md](DECISIONS.md).
+
+Requirement IDs and current implementation evidence are indexed in [REQUIREMENTS_TRACEABILITY.md](REQUIREMENTS_TRACEABILITY.md).
 
 Every image below was opened with the local image viewer and visually examined. Descriptions report readable content and visible layout; they do not assert behavior beyond what the screenshot demonstrates. “Possible workflow” is omitted where a screenshot alone cannot establish one. Relevance is classified against currently documented MoneyLog requirements, not inferred from the image's original app.
 
@@ -94,7 +96,7 @@ See [UI_UX_SPEC.md §2](UI_UX_SPEC.md#2-evidence-and-authority), [§4](UI_UX_SPE
 
 ## 5. Inventory reconciliation
 
-The directory was enumerated and compared against the prior catalogue inventory. It contains 41 image files: 17 named transaction/screen references and 24 numbered images. Every discovered file is listed above using its exact filename. Each was opened and visually inspected; none was unreadable or unavailable. No files are present in the directory but missing from this catalogue, and no old catalogue entry refers to a nonexistent file. No unexpected files or filename discrepancies were found.
+The directory was enumerated and compared against the catalogue inventory on 2026-10-30. It contains 41 image files: 17 named transaction/screen references and 24 numbered images (`image 1.jpg` through `image 24.jpg`). Each discovered file was opened with the local image viewer and visually inspected during this audit; every file has a catalogue row and exact filename. None was unreadable or unavailable. No files are present in the directory but missing from this catalogue, and no catalogue entry refers to a nonexistent file. No unexpected files or filename discrepancies were found.
 
 | Measure | Count |
 |---|---:|

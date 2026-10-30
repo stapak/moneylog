@@ -82,6 +82,19 @@ The exact contents of Basic remain to be confirmed.
 
 **Constraint:** Inspect before editing. Avoid destructive changes and unnecessary rewrites.
 
+### DEC-013 — Display Options controls
+**Decision:** Records Display Options include a period selector, Show total, and Carry over controls.
+
+**Unresolved behavior:** What Show total changes and what Carry over includes or carries between periods. `Screenshot 2 Display Options.jpg` visibly describes monthly surplus moving into the next month in the referenced app, but that wording is not approval of MoneyLog calculation semantics. Preserve only the presence of the controls until confirmed. (HOME-004)
+
+### DEC-014 — Date-grouped Records and month browsing
+**Decision:** Group transaction records by date and provide previous/next-month navigation in the monthly view. The filter control opens Display Options. (HOME-003, HOME-005)
+
+### DEC-015 — Backup directory workflow
+**Decision:** The intended workflow creates `.mbak` in a user-selected directory, allows the directory to be changed, and presents `.mbak` files found there for restore. Backups are password-protected, validated before modifying data, and failure must preserve current data. Backup/restore is distinct from CSV/PDF exports. (BAK-001–BAK-005)
+
+**Privacy constraint:** A reference screenshot's suggestion to keep a copy on a computer or cloud service is not authorization for automatic upload.
+
 ## 2. Unresolved decisions
 
 The following items must not be silently assumed.
@@ -112,6 +125,30 @@ Select a safe, practical mechanism for transferring data between the phone and t
 
 ### OPEN-009 — Screenshot references
 Identify which supplied screenshots represent approved MoneyLog designs and which are examples from other applications.
+
+### OPEN-010 — Show total behavior
+The control's presence is recovered, but what total it displays, where it appears, and how it interacts with period selection is not settled. Do not infer behavior from screenshot state. (HOME-004)
+
+### OPEN-011 — Carry over semantics
+The control's presence is recovered. Confirm whether it affects display, reporting, targets, or another calculation. The screenshot says monthly surplus is added to the next month, but that is reference-app text and is not a confirmed MoneyLog financial rule. (HOME-004)
+
+### OPEN-012 — Remaining navigation
+Earlier navigation discussion/reference material included Records, Analysis, Budgets, Accounts, and Categories. The later confirmed decision moved Categories to the Home hamburger and replaced it with Target in bottom navigation. Confirm whether Records, Analysis, and Accounts remain bottom destinations, whether Budgets is represented by Target, and the final ordering/menu contents. The Categories and Target decisions remain confirmed. (NAV-001)
+
+### OPEN-013 — Account deletion and balance rules
+Confirm deletion behavior when transactions refer to an account, account types, and whether opening balances or negative balances have restrictions. Do not leave or silently repair dangling transaction references. (ACC-001, ACC-004)
+
+### OPEN-014 — Target calculations
+Confirm target period, category linkage, included transaction types, carry-forward, progress, and overspending calculations. (TGT-001)
+
+### OPEN-015 — Restore policy
+Confirm whether restore replaces, merges, or offers both; define duplicate handling and recovery. Validation-before-write and preserving existing data on failure are confirmed safeguards. (BAK-004)
+
+### OPEN-016 — Export details
+Confirm Basic PDF contents, CSV columns/filters, transfer handling, and which charts belong in each report. The three PDF modes and category selection requirement remain confirmed. (RPT-001–RPT-003)
+
+### OPEN-017 — Money precision and attachments
+Confirm currency/scale policy and supported bill file types, size limits, and attachment deletion lifecycle before implementation. (DAT-003, ATT-001)
 
 ## 3. How to maintain this file
 

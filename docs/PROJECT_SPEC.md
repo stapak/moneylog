@@ -5,6 +5,8 @@
 **Status:** Initial specification based on confirmed project discussions  
 **Primary development priority:** Mobile application
 
+Requirement IDs and current evidence are indexed in [REQUIREMENTS_TRACEABILITY.md](REQUIREMENTS_TRACEABILITY.md). This specification records intended behavior, not implementation proof.
+
 ## 1. Product vision
 
 MoneyLog is a privacy-focused personal finance application for tracking income, expenses, accounts, budgets, and financial records.
@@ -85,6 +87,8 @@ The interface should present transaction records clearly and use consistent date
 
 Other account-specific balance displays must follow the confirmed account requirements.
 
+The month view supports previous/next-month navigation. A filter control opens Display Options with the period selector, Show total, and Carry over controls. Transactions are grouped by date. The presence of Show total and Carry over is recovered as a requirement; their precise effects remain unresolved. The old reference image describes monthly surplus being added to the next month, but this is reference-app wording and is not confirmation of MoneyLog semantics. See HOME-003–HOME-005.
+
 ### 3.5 Navigation
 
 Confirmed navigation decisions:
@@ -92,6 +96,8 @@ Confirmed navigation decisions:
 - Categories is accessible from the Home hamburger menu.
 - Target replaces Categories in the bottom navigation.
 - A global floating '+' button provides access to adding a transaction.
+
+The remaining bottom-navigation destinations and ordering, and the rest of the hamburger menu, remain unresolved (NAV-001).
 
 Inspect the existing navigation before making UI changes.
 
@@ -122,6 +128,8 @@ The specification and architecture must document:
 - Backup inclusion.
 - PDF-export behavior.
 - Safe deletion and restoration of attachments.
+
+See TXN-004 and ATT-001. Supported attachment types, size limits, and lifecycle details remain open.
 
 ### 3.8 Themes and visual design
 
@@ -183,6 +191,8 @@ The restore workflow must define:
 - Protection against accidental loss of existing data.
 
 Unconfirmed restore behavior must be recorded as an open decision rather than assumed.
+
+The interface should allow the user to select and change a backup directory, create a portable `.mbak` there, and list `.mbak` files from the selected directory for restore. Support password-protected backups. Validate the package before changing stored data and preserve existing data if restoration fails. Backup/restore remains distinct from CSV/PDF export. Include all data, relationships, settings, and bill attachments required by the final data model. A screenshot's suggestion to store backups on a computer or cloud service does not authorize automatic upload. See BAK-001–BAK-005.
 
 ## 6. Reports and exports
 
@@ -281,6 +291,8 @@ These items require verification or confirmation:
 7. Restore merge versus replacement behavior.
 8. Exact website-to-phone data transfer mechanism.
 9. Which reference screenshots represent the final approved designs.
+
+The Show total behavior, Carry over semantics, remaining navigation destinations, account deletion policy, target calculations, restore merge/replacement and duplicate behavior, PDF Basic contents, and CSV fields/filters are explicitly open. See `DECISIONS.md` and the relevant IDs in `REQUIREMENTS_TRACEABILITY.md`.
 
 ## 11. Requirement verification
 

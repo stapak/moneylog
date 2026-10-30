@@ -1,6 +1,6 @@
 ﻿# MoneyLog Architecture
 
-**Audit basis:** local source tree inspected on 2026-10-27. This document describes code that exists; it is not a target design.
+**Audit basis:** local source tree rechecked on 2026-10-30. This document describes code that exists; it is not a target design. Requirement-level evidence is indexed in [REQUIREMENTS_TRACEABILITY.md](REQUIREMENTS_TRACEABILITY.md).
 
 ## Project structure
 
@@ -52,4 +52,6 @@ Runtime dependencies in `pubspec.yaml`: Flutter SDK, `cupertino_icons`, `drift`,
 - `test/widget_test.dart`: expects text `Budget` and `Budget App`, while the current app title/screen display MoneyLog Accounts. This expectation conflicts with directly inspected UI and is likely stale; it was not executed successfully in this audit.
 
 Commands attempted on 2026-10-27: `flutter test` and `flutter --version` produced no output and did not complete during the available wait; both processes were interrupted. Therefore tests, static analysis, and Android build are **not verified**. No command result is represented as a pass.
+
+The 2026-10-30 documentation audit re-inspected the source and six test files but did not rerun Flutter/Dart commands. The latest outcomes remain those recorded in `IMPLEMENTATION_STATUS.md` (2026-10-29): stalled/interrupted with no test, analysis, or build result. The widget test still asserts the old `Budget` / `Budget App` UI.
 

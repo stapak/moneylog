@@ -19,6 +19,7 @@ Use the following files as the persistent project knowledge base:
 - `docs/DECISIONS.md` — confirmed decisions and unresolved questions.
 - `docs/UI_UX_SPEC.md` — intended screen behavior and confirmed UI/UX changes.
 - `docs/UI_REFERENCE_CATALOG.md` — index and interpretation of original UI reference screenshots.
+- `docs/REQUIREMENTS_TRACEABILITY.md` — stable requirements, decision status, source/test evidence, acceptance criteria, and unresolved dependencies.
 - `docs/reference-images/` — original visual reference images.
 
 Read this file and the relevant project documents before substantial work.
@@ -34,12 +35,13 @@ If a document or image is missing or inaccessible, state that limitation instead
 At the beginning of a new task:
 
 1. Read this `AGENTS.md`.
-2. Read the relevant project documentation. For substantial work, review all six core documents: `PROJECT_SPEC.md`, `ARCHITECTURE.md`, `IMPLEMENTATION_STATUS.md`, `ROADMAP.md`, `DECISIONS.md`, and `UI_UX_SPEC.md`, plus `UI_REFERENCE_CATALOG.md` when available.
-3. Inspect the current Git branch and working-tree status.
+2. Read `docs/REQUIREMENTS_TRACEABILITY.md` and the relevant project/UI documents before making changes. For substantial work, review all six core documents: `PROJECT_SPEC.md`, `ARCHITECTURE.md`, `IMPLEMENTATION_STATUS.md`, `ROADMAP.md`, `DECISIONS.md`, and `UI_UX_SPEC.md`, plus `UI_REFERENCE_CATALOG.md`.
+3. Inspect the current Git branch, working-tree status, and recent commits/changes.
 4. Review relevant source files, tests, database migrations, and dependencies.
-5. Identify the requested behavior, acceptance criteria, risks, and required verification.
+5. Identify the bounded task, its requirement IDs, acceptance criteria, risks, and required verification.
 6. Check whether previous work or uncommitted changes affect the task.
-7. State a concise understanding of the task and its scope before substantial implementation.
+7. Implement only the assigned bounded task, run appropriate verification, and update the relevant documentation in the same task.
+8. State a concise understanding of the task and its scope before substantial implementation.
 
 Do not repeatedly ask the developer to explain requirements already documented in the repository.
 
@@ -180,6 +182,8 @@ Record failed, skipped, unavailable, and inconclusive checks explicitly.
 ## 11. Mandatory Documentation Maintenance
 
 Documentation updates are part of implementation, not an optional follow-up task.
+
+Keep `docs/REQUIREMENTS_TRACEABILITY.md` aligned with requirement decisions, implementation evidence, test outcomes, and acceptance criteria. Keep each session's implementation scope bounded to the assigned task and link work to requirement IDs. At task end, review the Git diff and update the appropriate status and roadmap entries. Do not claim verification that was not performed.
 
 After every meaningful code change, update the relevant documents in the same task.
 

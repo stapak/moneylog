@@ -2,7 +2,7 @@
 
 **Document type:** Product UI and interaction requirements  
 **Status:** Initial specification based on confirmed project decisions and existing project documentation  
-**Last reviewed:** 2026-10-28
+**Last reviewed:** 2026-10-30
 
 ## 1. Purpose
 
@@ -48,6 +48,8 @@ Do not silently turn a reference application's behavior into a MoneyLog requirem
 
 ## 4. Application navigation
 
+Requirement IDs for these interactions and their implementation evidence are in [REQUIREMENTS_TRACEABILITY.md](REQUIREMENTS_TRACEABILITY.md).
+
 ### 4.1 Home and Records
 
 The Home/Records experience is intended to be the main place for reviewing income, expenses, and transaction records.
@@ -84,6 +86,12 @@ Confirmed behavior: opening the Add New Transaction workflow.
 
 The button must not merely add an account or perform an unrelated action. Ensure its behavior is consistent wherever it is displayed.
 
+### 4.5 Records browsing and Display Options
+
+The Records screen groups transactions by date. In Monthly mode, previous and next controls browse months. The filter icon opens Display Options, which contains the confirmed period selector (Daily, Monthly, 3 Months, Yearly, All Time), Show total, and Carry over controls. These controls' presence is confirmed; the exact effect of Show total and Carry over is unresolved. Do not implement the screenshot's “monthly surplus will be added to the next month” explanation as MoneyLog behavior without an explicit decision. The reference also shows Weekly and 6 Months; neither is in the confirmed period list. See HOME-002–HOME-005 and `Screenshot 1 Home  Records page.jpg` / `Screenshot 2 Display Options.jpg`.
+
+The screenshot's Categories bottom tab is superseded by the confirmed navigation decision: Categories belongs in the hamburger and Target replaces Categories in bottom navigation. Other bottom destinations/menu entries remain unresolved.
+
 ## 5. Transactions
 
 MoneyLog must support the transaction workflows described in `PROJECT_SPEC.md` and `DECISIONS.md`.
@@ -109,6 +117,8 @@ Transaction functionality should cover, as appropriate:
 
 The precise field arrangement, popup versus full-screen presentation, keyboard behavior, date-picker design, and validation messages must be documented after inspecting the reference images and current implementation.
 
+The global `+` begins Add New Transaction and presents Expense, Income, and Transfer workflows. Transfers have source and destination accounts and are excluded from income/expense summaries. Grouping and summary decisions are detailed in HOME-001–HOME-005 and TXN-001–TXN-004. Observed entry/detail screenshots include `image 13.jpg`, `image 19.jpg`, `image 20.jpg`, `Screenshot 12 Transaction Details popup from Records.jpg`, `Income transaction.jpg`, and `Transfer transaction.jpg`; their precise form/modal styling is reference observation, not an approved layout.
+
 Do not invent field requirements from screenshot filenames.
 
 ## 6. Accounts
@@ -129,6 +139,8 @@ UI requirements:
 
 The visual design of account cards, icons, detail views, and dialogs must be based on inspected references and approved decisions.
 
+Support multiple accounts, opening balances, account-specific transaction records, and transfers between distinct source/destination accounts. The screenshots `Screenshot 4 Accounts page.jpg`, `Screenshot 5 Account Details  Account Transactions.jpg`, `Screenshot 6 Add New Account popup.jpg`, `image 12.jpg`, and `image 14.jpg` are visual evidence only. In particular, initial-amount treatment, account types, deletion policy, negative balances, and exact balance breakdown remain unresolved. Do not infer them from screenshot labels.
+
 ## 7. Categories
 
 Confirmed requirements:
@@ -145,6 +157,8 @@ Confirmed requirements:
 Category creation, editing, deletion, and other actions must preserve transaction history.
 
 Do not assume that a category-management screen, context menu, or particular set of category actions is approved merely because it appears in a reference image.
+
+The screenshots `Screenshot 3 Categories page.jpg`, `Screenshot 7 Add New Category popup.jpg`, both `Screenshot 8 Edit Category + Category Actions` images, and `image 15.jpg` show category-list and picker patterns. They do not approve the depicted bottom tab, exact icon set, ellipsis actions, or “Ignore” behavior. Preserve separate income/expense lists, category colors, custom categories, and history-safe changes as requirements.
 
 ## 8. Target and budgets
 
@@ -215,6 +229,8 @@ The interface must eventually support the confirmed password-protected backup an
 - Confirming destructive actions where necessary.
 
 The exact screens, directory selection behavior, restore policy, and backup-file management interactions must be documented from confirmed requirements and inspected references.
+
+Recovered interaction requirements specify that the user can select and change a backup directory; BACKUP NOW creates a portable `.mbak` there; RESTORE lists `.mbak` files found in that directory; and protected backups require a password. Validate package and relationships before touching live data. A failed restore must preserve existing data. Include all required records, settings, relationships, and bill attachments defined by the final model. Keep this workflow distinct from CSV/PDF reports. `image 24.jpg` visibly mentions a computer or cloud storage as a suggested safer location; it does not authorize automatic upload or a cloud integration. Restore replace/merge behavior remains unresolved. (BAK-001–BAK-005)
 
 Security must be implemented in the underlying code; a password field or security message alone does not establish secure backup behavior.
 
@@ -319,6 +335,10 @@ Do not silently decide the following from incomplete evidence:
 - Basic PDF contents.
 - Exact report and analysis layouts.
 - Exact backup and restore screen behavior.
+- Show total effect and Carry over meaning.
+- Remaining bottom-navigation destinations and ordering.
+- Account deletion and negative-balance behavior.
+- Target calculations, restore merge/replacement behavior, and export field details.
 - Theme colors and detailed visual tokens.
 
 Resolve these incrementally through actual screenshot inspection and explicit user confirmation.

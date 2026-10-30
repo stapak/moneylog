@@ -1,6 +1,8 @@
 ﻿# MoneyLog Development Roadmap
 
-**Audit date:** 2026-10-27. Priorities below reflect the local source audit. `[x]` means directly verified complete, `[!]` marks a directly verified defect or missing requirement, and `[ ]` means pending or unverified.
+**Audit basis:** source/priority audit 2026-10-27; repository handover rechecked 2026-10-30. Priorities below reflect the local source audit. `[x]` means directly verified complete, `[!]` marks a directly verified defect or missing requirement, and `[ ]` means pending or unverified.
+
+Requirement IDs and acceptance criteria are maintained in [REQUIREMENTS_TRACEABILITY.md](REQUIREMENTS_TRACEABILITY.md). The 2026-10-30 review found no newer source changes or verification results; Git HEAD `eba16e7` changes only the implementation-status document. No checks were run during the documentation audit.
 
 ## Phase 0 - Source audit
 
@@ -10,6 +12,8 @@
 - [x] Record evidence and test execution limits in architecture and status documents.
 
 ## Phase 1 - Restore a verifiable development baseline
+
+**Requirements:** QA-001, QA-002, HAND-001.
 
 - [!] The existing `test/widget_test.dart` expects `Budget` and `Budget App`, but inspected `lib/main.dart` renders MoneyLog Accounts; Flutter commands produced no output and hung during this audit.
 - [ ] Establish a working Flutter/Dart toolchain in this environment and run `flutter --version`, `flutter test`, and `flutter analyze`.
@@ -21,6 +25,8 @@
 
 ## Phase 2 - Protect and verify local financial data
 
+**Requirements:** ACC-002, ACC-004, DAT-001–DAT-004, TXN-001, TXN-003.
+
 - [!] The `AccountRepository` drops `iconName` on create/read/update although the UI edits it and `Accounts` has a DB column.
 - [!] Account deletion removes an account without handling transaction rows that reference it; schema has no FK constraints.
 - [ ] Decide and document safe account deletion behavior, then preserve transaction/account integrity.
@@ -31,6 +37,8 @@
 **Exit criterion:** Existing records survive upgrades/restarts and CRUD operations cannot leave inconsistent or silently invalid records.
 
 ## Phase 3 - Complete core mobile workflows
+
+**Requirements:** HOME-001–HOME-005, NAV-001–NAV-002, TXN-001–TXN-004, ACC-001–ACC-004, CAT-001–CAT-004, TGT-001, ATT-001.
 
 ### Transactions and accounts
 
@@ -55,6 +63,8 @@
 
 ## Phase 4 - Secure portable `.mbak` backup and restore
 
+**Requirements:** BAK-001–BAK-005.
+
 - [ ] Define versioned package contents and compatibility policy, including attachments and relationships.
 - [ ] Select established cryptographic implementation and implement password-based key derivation plus authenticated encryption.
 - [ ] Validate package structure, integrity, version, and attachment paths before touching stored data.
@@ -64,6 +74,8 @@
 **Exit criterion:** Valid packages restore completely and invalid/incomplete packages fail without silent data loss.
 
 ## Phase 5 - Reports and exports
+
+**Requirements:** RPT-001–RPT-003.
 
 - [ ] Confirm fields included in Basic PDF.
 - [ ] Implement the three confirmed PDF options: Basic; Expenses + descriptions; Expenses + descriptions + bills.
@@ -75,6 +87,8 @@
 
 ## Phase 6 - Theme and mobile quality
 
+**Requirements:** THM-001, QA-001, QA-002, DAT-001.
+
 - [ ] Implement dark theme and theme selection/persistence.
 - [ ] Verify responsive behavior and form validation across supported screen sizes.
 - [ ] Verify privacy/local-only handling and app restart behavior.
@@ -83,6 +97,8 @@
 **Exit criterion:** Mobile foundation is reliable for daily use and quality checks are repeatable.
 
 ## Phase 7 - Laptop-hosted website (deferred)
+
+**Requirements:** WEB-001 (deferred until mobile and backup prerequisites are satisfied).
 
 - [ ] Define supported edits and deliberate phone-to-laptop transfer workflow.
 - [ ] Import and validate transferred data; support temporary local workspace editing.
@@ -94,5 +110,5 @@ Start only after mobile persistence and backup/restore are reliable.
 
 ## Immediate next task
 
-Restore a verifiable Flutter baseline: resolve the stale widget-test expectation and get Flutter commands to complete, then run the suite, analyzer, and Android build. This is the highest-priority next task because the current test expectation conflicts with the actual screen and none of the test/build checks could be completed, so there is no reliable pass/fail baseline for subsequent data-safety work.
+First restore a verifiable Flutter baseline (QA-001/QA-002): resolve the stale widget-test expectation against the approved current startup behavior, establish why Flutter commands stall, then run the suite, analyzer, and Android debug build. Acceptance is successful completion of each check with outcomes recorded; a stall is inconclusive, not a test failure. Next fix account icon persistence (ACC-002): pass `iconName` through repository create/update and both read mappings, with regression cases for create/read, list/read, and update; verify against the current schema without a migration. Keep account deletion (ACC-004) separate until OPEN-013 is resolved.
 
